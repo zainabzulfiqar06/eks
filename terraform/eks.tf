@@ -8,11 +8,7 @@ module "eks" {
   subnet_ids = module.eks-vpc.private_subnets
   vpc_id = module.eks-vpc.vpc_id
 
-
-  
-
-
-
+  cluster_endpoint_public_access  = true 
   tags = {
     environment = "dev"
     application = "face-crop"
@@ -24,7 +20,7 @@ module "eks" {
 
   eks_managed_node_groups = {
     eks-nodegroup = {
-      ami_type       = "AL2023_x86_64_STANDARD"
+      ami_type       = var.ami_id
       instance_types = ["t2.micro"]
 
       min_size     = 2
@@ -37,14 +33,6 @@ module "eks" {
 
 
 
-# using self managed ec3 instances( nodes )
 
-#  self_managed_node_groups = {
-#   worker-group-1 = {
-#     name                 = "worker-group-1"   # Must be at least 3 characters
-#     instance_type        = "t2.micro"
-#     asg_desired_capacity = 3
-#   }
-#  }
 
 }
