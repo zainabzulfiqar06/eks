@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: face-crop
+  namespace: my-namespace
   labels:
     app: face-crop
 spec:
@@ -16,10 +17,12 @@ spec:
     spec:
       containers:
       - name: face-crop
-        image: face-crop
+        image: 497713065171.dkr.ecr.eu-west-3.amazonaws.com/face-crop
         imagePullPolicy: Always
         ports:
-        - containerPort: 8080
+        - containerPort: 8000
+        imagePullSecrets:
+      - name: ecr-registry-secret
         resources:
           requests:
             memory: "128Mi"
@@ -30,12 +33,12 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: 8000
           initialDelaySeconds: 10
           periodSeconds: 10
         readinessProbe:
           httpGet:
             path: /health
-            port: 8080
+            port: 8000
           initialDelaySeconds: 5
           periodSeconds: 5
