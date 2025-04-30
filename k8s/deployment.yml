@@ -17,7 +17,7 @@ spec:
       containers:
       - name: face-crop
         image: face-crop
-        imagePullPolicy: Always   
+        imagePullPolicy: Always
         ports:
         - containerPort: 8080
         resources:
@@ -27,3 +27,15 @@ spec:
           limits:
             memory: "256Mi"
             cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
