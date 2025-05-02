@@ -12,13 +12,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Install Terraform
-      - name: Install Terraform
-        run: |
-          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
-          sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
-          sudo apt-get update
-          sudo apt-get install terraform
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.7.5
 
       # Setup Terraform and AWS credentials
       - name: Set AWS Credentials
