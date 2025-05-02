@@ -43,8 +43,8 @@ jobs:
       - name: Create terraform.auto.tfvars
         run: |
           echo "vpc_cidr_block = \"${{ secrets.VPC_CIDR_BLOCK }}\"" > terraform.auto.tfvars
-          echo "private_subnet_cidr_blocks = [\"$(echo ${{ secrets.PRIVATE_SUBNET_CIDR_BLOCKS }} | tr ',' '" ,"')\"]" >> terraform.auto.tfvars
-          echo "public_subnet_cidr_blocks = [\"$(echo ${{ secrets.PUBLIC_SUBNET_CIDR_BLOCKS }} | tr ',' '" ,"')\"]" >> terraform.auto.tfvars
+          echo "private_subnet_cidr_blocks = ${{ secrets.PRIVATE_SUBNET_CIDR_BLOCKS }}" >> terraform.auto.tfvars
+          echo "public_subnet_cidr_blocks = ${{ secrets.PUBLIC_SUBNET_CIDR_BLOCKS }}" >> terraform.auto.tfvars
 
       # Format Terraform configuration
       - name: Terraform Format
