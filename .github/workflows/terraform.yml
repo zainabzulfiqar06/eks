@@ -31,13 +31,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      # Initialize Terraform working directory
-      - name: Terraform Init
-        run: terraform init
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+     
 
       # Create terraform.auto.tfvars dynamically using GitHub secrets
       - name: Create terraform.auto.tfvars
@@ -46,12 +40,19 @@ jobs:
           echo "private_subnet_cidr_blocks = [\"${{ secrets.PRIVATE_SUBNET_CIDR_BLOCKS }}\"]" | sed 's/,/","/g' >> terraform.auto.tfvars  
           echo "public_subnet_cidr_blocks = [\"${{ secrets.PUBLIC_SUBNET_CIDR_BLOCKS }}\"]" | sed 's/,/","/g' >> terraform.auto.tfvars
 
+      # Initialize Terraform working directory and download plugins
+      - name: Terraform Init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+
       # Format Terraform configuration
       - name: Terraform Format
         run: terraform fmt
-      - name: Terraform Init
-        run: terraform init
-
+     
       # Generate an execution plan
       - name: Terraform Plan
         run: terraform plan
