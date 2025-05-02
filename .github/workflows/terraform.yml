@@ -1,0 +1,104 @@
+name: Terraform
+
+on:
+  workflow_dispatch: # Allows manual triggers
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Install Terraform
+      - name: Install Terraform
+        run: |
+          curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+          sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+          sudo apt-get update
+          sudo apt-get install terraform
+
+      # Setup Terraform and AWS credentials
+      - name: Set AWS Credentials
+        run: |
+          echo "AWS Access Key: ${{ secrets.AWS_ACCESS_KEY_ID }}"
+          echo "AWS Secret Access Key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}"
+          echo "AWS Region: ${{ secrets.AWS_REGION }}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      # Initialize Terraform working directory
+      - name: Terraform Init
+        run: terraform init
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      # Create terraform.auto.tfvars dynamically using GitHub secrets
+      - name: Create terraform.auto.tfvars
+        run: |
+          echo "vpc_cidr_block = \"${{ secrets.VPC_CIDR_BLOCK }}\"" > terraform.auto.tfvars
+          echo "private_subnet_cidr_blocks = [$(echo '${{ secrets.PRIVATE_SUBNET_CIDR_BLOCKS }}' | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')]" >> terraform.auto.tfvars
+          echo "public_subnet_cidr_blocks = [$(echo '${{ secrets.PUBLIC_SUBNET_CIDR_BLOCKS }}' | sed 's/,/","/g' | sed 's/^/"/' | sed 's/$/"/')]" >> terraform.auto.tfvars
+
+      # Format Terraform configuration
+      - name: Terraform Format
+        run: terraform fmt
+
+      # Generate an execution plan
+      - name: Terraform Plan
+        run: terraform plan
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Terraform Import Existing Resources
+        run: |
+         terraform import module.eks.aws_cloudwatch_log_group.this[0] /aws/eks/eks_cluster/cluster
+         terraform import module.eks.module.kms.aws_kms_alias.this["cluster"] arn:aws:kms:us-east-1:497713065171:alias/eks/eks_cluster_key
+        env:
+         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+         AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      # Apply Terraform plan to create/update infrastructure
+      - name: Terraform Apply
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: terraform apply -auto-approve
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
+      # Configure kubectl to connect to EKS
+      - name: Set up kubectl for EKS
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          # Install AWS CLI if not already installed
+          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+          unzip -q awscliv2.zip
+          sudo ./aws/install
+
+          # Configure AWS CLI
+          aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+          aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+          aws configure set region $AWS_REGION
+
+          # Retrieve the EKS cluster credentials and configure kubectl
+          aws eks update-kubeconfig --region $AWS_REGION --name ${{ secrets.EKS_CLUSTER_NAME }}
+
+      # Run kubectl command (for example, checking cluster nodes)
+      - name: kubectl Get Nodes
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+        run: kubectl get nodes
