@@ -49,6 +49,8 @@ jobs:
       # Format Terraform configuration
       - name: Terraform Format
         run: terraform fmt
+      - name: Terraform Init
+        run: terraform init
 
       # Generate an execution plan
       - name: Terraform Plan
