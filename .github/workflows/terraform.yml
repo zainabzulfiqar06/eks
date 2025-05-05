@@ -52,15 +52,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Terraform Import Existing Resources
-        working-directory: ./terraform
-        run: |
-          terraform import module.eks.aws_cloudwatch_log_group.this[0] /aws/eks/eks_cluster/cluster
-          terraform import module.eks.module.kms.aws_kms_alias.this["cluster"] arn:aws:kms:us-east-1:497713065171:alias/eks/eks_cluster_key
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+     
 
       - name: Terraform Apply
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
