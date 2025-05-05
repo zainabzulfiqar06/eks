@@ -35,6 +35,7 @@ module "alb" {
     Environment = "dev"
   }
 }
+
 resource "aws_security_group" "alb_sg" {
   name   = "alb-sg"
   vpc_id = module.eks-vpc.vpc_id
@@ -55,12 +56,13 @@ resource "aws_security_group" "alb_sg" {
 }
 
 resource "aws_lb_target_group_attachment" "eks_node_attachment" {
-  for_each = toset(aws_instance.eks_nodes.*.id)
+  for_each = toset(data.aws_instances.eks_nodes.ids)
 
-  target_group_arn = module.alb.target_group_arns["tg1"]
+  target_group_arn = module.alb.target_groups["tg1"].arn
   target_id        = each.value
   port             = 80
 }
+
 
 data "aws_instances" "eks_nodes" {
   filter {
@@ -68,4 +70,3 @@ data "aws_instances" "eks_nodes" {
     values = ["eks-nodegroup"]
   }
 }
-

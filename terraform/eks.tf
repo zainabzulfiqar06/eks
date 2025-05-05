@@ -2,19 +2,19 @@ module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "20.36.0"
 
-  cluster_name = "eks_cluster"
+  cluster_name    = "eks_cluster"
   cluster_version = "1.30"
 
   subnet_ids = module.eks-vpc.private_subnets
-  vpc_id = module.eks-vpc.vpc_id
+  vpc_id     = module.eks-vpc.vpc_id
 
-  cluster_endpoint_public_access  = true 
+  cluster_endpoint_public_access = true
   tags = {
     environment = "dev"
     application = "face-crop"
   }
 
-# using the nodegroups for the worker nodes
+  # using the nodegroups for the worker nodes
 
 
 
