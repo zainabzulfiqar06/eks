@@ -35,8 +35,12 @@ jobs:
          REGION: ${{ vars.REGION }}
         run: |
           echo "vpc_cidr_block = \"${{ secrets.VPC_CIDR_BLOCK }}\"" > terraform.auto.tfvars
-          echo "private_subnet_cidr_blocks = [\"$(echo '${{ secrets.PRIVATE_SUBNET_CIDR_BLOCKS }}' | sed 's/,/","/g' | xargs)\"]" >> terraform.auto.tfvars
-          echo "public_subnet_cidr_blocks = [\"$(echo '${{ secrets.PUBLIC_SUBNET_CIDR_BLOCKS }}' | sed 's/,/","/g' | xargs)\"]" >> terraform.auto.tfvars
+          echo "private_subnet_cidr_blocks = [\"${{ secrets.PRIVATE_SUBNET_CIDR_BLOCKS }}\"]" \
+          | sed 's/,/","/g' | grep -v '\*\*\*' >> terraform.auto.tfvars
+
+          echo "public_subnet_cidr_blocks = [\"${{ secrets.PUBLIC_SUBNET_CIDR_BLOCKS }}\"]" \
+          | sed 's/,/","/g' | grep -v '\*\*\*' >> terraform.auto.tfvars
+
           echo "ami_id = \"$AMI_ID\"" >> terraform.auto.tfvars
           echo "region = \"$REGION\"" >> terraform.auto.tfvars 
 
