@@ -9,6 +9,7 @@ jobs:
     environment: development
     env:
       AMI_ID: ${{ vars.AMI_ID }}
+      REGION: ${{vars.REGION}}
 
     steps:
       - name: Checkout
@@ -31,11 +32,13 @@ jobs:
         working-directory: ./terraform
         env:
          AMI_ID: ${{ vars.AMI_ID }} 
+         REGION: ${{vars.REGION}}
         run: |
           echo "vpc_cidr_block = \"${{ secrets.VPC_CIDR_BLOCK }}\"" > terraform.auto.tfvars
           echo "private_subnet_cidr_blocks = [\"${{ secrets.PRIVATE_SUBNET_CIDR_BLOCKS }}\"]" | sed 's/,/","/g' >> terraform.auto.tfvars  
           echo "public_subnet_cidr_blocks = [\"${{ secrets.PUBLIC_SUBNET_CIDR_BLOCKS }}\"]" | sed 's/,/","/g' >> terraform.auto.tfvars
           echo "ami_id = \"$AMI_ID\"" >> terraform.auto.tfvars 
+          echo "regon = \"$REGION\"" >> terraform.auto.tfvars 
 
       - name: Terraform Validate
         working-directory: ./terraform
