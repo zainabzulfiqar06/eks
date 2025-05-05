@@ -56,7 +56,7 @@ resource "aws_security_group" "alb_sg" {
 }
 
 resource "aws_lb_target_group_attachment" "eks_node_attachment" {
-  for_each = toset(data.aws_instances.eks_nodes.ids)
+  for_each = tolist(data.aws_instances.eks_nodes.ids)
 
   target_group_arn = module.alb.target_groups["tg1"].arn
   target_id        = each.value
