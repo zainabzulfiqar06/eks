@@ -7,6 +7,8 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     environment: development
+    env:
+      AMI_ID: ${{ vars.AMI_ID }}
 
     steps:
       - name: Checkout
