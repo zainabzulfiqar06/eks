@@ -9,7 +9,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: wearitall-be.com
+    - host: <valid domain>
       http:
         paths:
           - path: /
